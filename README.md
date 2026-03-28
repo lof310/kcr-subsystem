@@ -1,5 +1,8 @@
 # KCR (Kernel Computation Reuse)
 
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
+[![Kernel Version](https://img.shields.io/badge/Kernel-6.19%2B-lightgrey.svg)](https://kernel.org)
+
 **KCR** is a Linux kernel subsystem designed to eliminate redundant deterministic computation through transparent, kernel-level memoization. By intercepting execution paths and caching results of pure functions, KCR reduces CPU utilization for repetitive workloads without requiring application modifications.
 
 > **Status:** **Prototype / Kernel Module Only**  
