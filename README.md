@@ -35,13 +35,6 @@ KCR operates transparently once loaded. Applications do not need to be recompile
 ### Automatic Detection
 By default, KCR runs in **Learning Mode**. It monitors marked regions for 100 executions to verify determinism before enabling caching. If non-determinism is detected, caching is automatically disabled for that region.
 
-### Manual Hinting (Optional)
-Advanced users can hint candidate regions via the provided `kmrctl` utility (included in `tools/`):
-```bash
-# Mark a memory range as a memoization candidate
-sudo ./tools/kmrctl --mark --pid <PID> --addr <ADDRESS> --len <LENGTH>
-```
-
 ## Performance Impact
 
 *   **Idle Overhead:** < 0.02% (when no regions are marked).
