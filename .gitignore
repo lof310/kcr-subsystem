@@ -1,0 +1,57 @@
+```
+# Build artifacts
+*.o
+*.obj
+*.a
+*.so
+*.ko
+*.mod.c
+*.order
+*.symvers
+*.dwo
+*.dwz
+
+# Debug and coverage
+*.gcno
+*.gcda
+*.gcov
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Environment and cache
+.cache/
+.cargo/
+.target/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Configuration backups
+.config/
+.old
+.bak
+
+# Compression artifacts (if any generated during build)
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+```
