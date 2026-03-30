@@ -1,4 +1,13 @@
 ```
-# Compiled kernel module
-drivers/kcr/kcr.mod
+# Compiled object files
+*.o
+*.obj
+*.cmd
+*.d
+
+# Kernel build artifacts
+.kcr_*.o.cmd
+.kcr_*.o.d
+.kcr_*.cmd
+.kcr_*.d
 ```

@@ -311,7 +311,8 @@ void invalidate_range(struct mm_struct *mm, unsigned long start, unsigned long e
 {
 	struct cpu_cache *cache;
 	struct l3_table *table;
-	struct kcr_entry *entry, *tmp;
+	struct kcr_entry *entry;
+	struct hlist_node *tmp;
 	unsigned long flags;
 	int i, socket;
 

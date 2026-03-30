@@ -322,8 +322,6 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/percpu-refcount.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/kasan.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/kasan-enabled.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/memfd.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/file.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/fs.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/wait_bit.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/kdev_t.h \
@@ -630,8 +628,11 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/cgroup_subsys.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/security.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/kernel_read_file.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/file.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/fdtable.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/nospec.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/vmalloc.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/vmalloc.h \
  /workspace/drivers/kcr/../../include/linux/kcr.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/skbuff.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/bvec.h \
@@ -653,8 +654,6 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/io.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/logic_pio.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/fwnode.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/vmalloc.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/vmalloc.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/netdev_features.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/sched/clock.h \
  /usr/src/linux-headers-6.1.0-44-common/include/net/flow_dissector.h \
