@@ -2,6 +2,8 @@
 
 A Linux kernel module for transparent computation reuse through adaptive lookup acceleration.
 
+> **CURRENTLY JUST A LIBRARY, NOT FUNCTIONAL YET BECAUSE IT REQUIRES DIRECT CHANGES TO THE KERNEL CODE**
+
 ## Overview
 
 KCR provides kernel-level memoization services that cache results of deterministic functions and inject them on subsequent identical calls. The system uses a two-tier cache hierarchy with per-CPU L2 and per-socket L3 caches, achieving 15-25 cycle hit latency.
