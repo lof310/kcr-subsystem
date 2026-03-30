@@ -201,7 +201,3 @@ KCR leverages hardware features for isolation:
 ## License
 
 GPL-2.0
-
-## References
-
-Based on the KCR manuscript: "Kernel Computation Reuse (KCR): Adaptive Transparent Lookup Acceleration for Kernel-Level Computation Reuse"
