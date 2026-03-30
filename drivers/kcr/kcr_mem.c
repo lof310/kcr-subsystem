@@ -54,36 +54,36 @@
  */
 struct shared_region *kcr_alloc_region(void)
 {
-struct shared_region *region;
-void *vaddr;
+	struct shared_region *region;
+	void *vaddr;
 
-/* Allocate region descriptor */
-region = kzalloc(sizeof(*region), GFP_KERNEL);
-if (!region)
-return NULL;
+	/* Allocate region descriptor */
+	region = kzalloc(sizeof(*region), GFP_KERNEL);
+	if (!region)
+		return NULL;
 
-/* Allocate with vmalloc - simple and reliable */
-vaddr = vmalloc(KCR_REGION_SIZE);
-if (!vaddr) {
-pr_warn("KCR: vmalloc failed\n");
-kfree(region);
-return NULL;
-}
+	/* Allocate with vmalloc - simple and reliable */
+	vaddr = vmalloc(KCR_REGION_SIZE);
+	if (!vaddr) {
+		pr_warn("KCR: vmalloc failed\n");
+		kfree(region);
+		return NULL;
+	}
 
-/* Initialize region structure */
-region->memfd_file = NULL;  /* No memfd in simplified version */
-region->kernel_vaddr = vaddr;
-region->size = KCR_REGION_SIZE;
-region->phys_addr = 0;  /* vmalloc doesn't provide contiguous physical */
-atomic_set(&region->refcount, 1);
+	/* Initialize region structure */
+	region->memfd_file = NULL;  /* No memfd in simplified version */
+	region->kernel_vaddr = vaddr;
+	region->size = KCR_REGION_SIZE;
+	region->phys_addr = 0;  /* vmalloc doesn't provide contiguous physical */
+	atomic_set(&region->refcount, 1);
 
-/* Zero-initialize the region */
-memset(vaddr, 0, KCR_REGION_SIZE);
+	/* Zero-initialize the region */
+	memset(vaddr, 0, KCR_REGION_SIZE);
 
-pr_info("KCR: allocated %lu MB shared region via vmalloc\n",
-(unsigned long)(KCR_REGION_SIZE / (1024 * 1024)));
+	pr_info("KCR: allocated %lu MB shared region via vmalloc\n",
+		(unsigned long)(KCR_REGION_SIZE / (1024 * 1024)));
 
-return region;
+	return region;
 }
 EXPORT_SYMBOL(kcr_alloc_region);
 
@@ -97,21 +97,21 @@ EXPORT_SYMBOL(kcr_alloc_region);
  */
 void kcr_free_region(struct shared_region *region)
 {
-if (!region)
-return;
+	if (!region)
+		return;
 
-if (!atomic_dec_and_test(&region->refcount))
-return;
+	if (!atomic_dec_and_test(&region->refcount))
+		return;
 
-if (region->kernel_vaddr) {
-vfree(region->kernel_vaddr);
-region->kernel_vaddr = NULL;
-}
+	if (region->kernel_vaddr) {
+		vfree(region->kernel_vaddr);
+		region->kernel_vaddr = NULL;
+	}
 
-/* No memfd file to release in simplified version */
+	/* No memfd file to release in simplified version */
 
-kfree(region);
-pr_debug("KCR: freed shared region\n");
+	kfree(region);
+	pr_debug("KCR: freed shared region\n");
 }
 EXPORT_SYMBOL(kcr_free_region);
 
@@ -129,17 +129,17 @@ EXPORT_SYMBOL(kcr_free_region);
  */
 int kcr_map_to_user(struct shared_region *region, struct task_struct *task)
 {
-if (!region || !task)
-return -EINVAL;
+	if (!region || !task)
+		return -EINVAL;
 
-/* 
- * Simplified version doesn't support user mapping.
- * Full implementation would use:
- * - remap_pfn_range() for physical mappings
- * - vm_insert_page() for vmalloc regions
- * - Or memfd_get_fd() + sys_mmap() for memfd-backed regions
- */
-pr_debug("KCR: user mapping not available in simplified mode\n");
-return -ENOSYS;
+	/* 
+	 * Simplified version doesn't support user mapping.
+	 * Full implementation would use:
+	 * - remap_pfn_range() for physical mappings
+	 * - vm_insert_page() for vmalloc regions
+	 * - Or memfd_get_fd() + sys_mmap() for memfd-backed regions
+	 */
+	pr_debug("KCR: user mapping not available in simplified mode\n");
+	return -ENOSYS;
 }
 EXPORT_SYMBOL(kcr_map_to_user);

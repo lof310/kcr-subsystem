@@ -142,9 +142,15 @@ int kcr_init(void)
 		int i;
 		
 		l3_tables[cpu].socket_id = cpu;
+		spin_lock_init(&l3_tables[cpu].ext_lock);
 		for (i = 0; i < KCR_L3_ENTRIES; i++) {
 			INIT_HLIST_HEAD(&l3_tables[cpu].buckets[i].head);
 			spin_lock_init(&l3_tables[cpu].buckets[i].lock);
+		}
+		/* Initialize external slots to NULL */
+		for (i = 0; i < KCR_EXT_SLOTS; i++) {
+			l3_tables[cpu].ext_slots[i] = NULL;
+			l3_tables[cpu].ext_slot_size[i] = 0;
 		}
 	}
 

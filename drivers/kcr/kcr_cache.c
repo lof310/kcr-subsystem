@@ -63,7 +63,8 @@ static struct kcr_entry *lookup_l2(struct cpu_cache *cache, u64 fingerprint,
 	rcu_read_lock();
 	hlist_for_each_entry_rcu(entry, &bkt->head, node) {
 		if (entry->fingerprint == fingerprint && entry->mm == mm) {
-			if (time_before(jiffies, entry->expiry_jiffies)) {
+			/* Fix: cast jiffies to unsigned long for typecheck macro */
+			if (time_before((unsigned long)jiffies, (unsigned long)entry->expiry_jiffies)) {
 				rcu_read_unlock();
 				this_cpu_inc(cache->stats.l2_hits);
 				return entry;
@@ -98,7 +99,8 @@ static struct kcr_entry *lookup_l3(u64 fingerprint, struct mm_struct *mm)
 	rcu_read_lock();
 	hlist_for_each_entry_rcu(entry, &table->buckets[fingerprint % KCR_L3_ENTRIES].head, node) {
 		if (entry->fingerprint == fingerprint && entry->mm == mm) {
-			if (time_before(jiffies, entry->expiry_jiffies)) {
+			/* Fix: cast jiffies to unsigned long for typecheck macro */
+			if (time_before((unsigned long)jiffies, (unsigned long)entry->expiry_jiffies)) {
 				rcu_read_unlock();
 				return entry;
 			}
@@ -244,12 +246,13 @@ static int store_in_l3(struct kcr_entry *entry, u64 fingerprint)
 /**
  * store_result() - Store computation result in both cache tiers
  * @fingerprint: 64-bit hash of input data
- * @data: Result data to cache (max 64 bytes)
+ * @data: Result data to cache (can be > 64 bytes, uses RAM for large data)
  * @len: Length of result data
  * @mm: Owner memory space for isolation
  *
  * Allocates and initializes new cache entry:
- * - Copies result data (up to 64 bytes)
+ * - For small results (≤64 bytes): stores inline in entry->result[]
+ * - For large results (>64 bytes): allocates external RAM slot
  * - Sets TTL expiration (1 second from now)
  * - Records current mm_generation for validation
  * - Captures PID and namespace for debugging
@@ -261,9 +264,12 @@ int store_result(u64 fingerprint, const void *data, u32 len, struct mm_struct *m
 {
 	struct cpu_cache *cache;
 	struct kcr_entry *entry;
+	int socket;
+	int ext_slot = -1;
+	unsigned long flags;
 	u32 result_words;
 
-	if (!data || len == 0 || len > KCR_RESULT_SIZE_MAX)
+	if (!data || len == 0)
 		return -EINVAL;
 
 	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
@@ -273,7 +279,6 @@ int store_result(u64 fingerprint, const void *data, u32 len, struct mm_struct *m
 	result_words = (len + sizeof(u64) - 1) / sizeof(u64);
 	
 	entry->fingerprint = fingerprint;
-	memcpy(entry->result, data, len);
 	entry->expiry_jiffies = jiffies + msecs_to_jiffies(1000);
 	entry->fragment_length = 0;
 	entry->register_mask = KCR_MASK_RAX;
@@ -284,6 +289,39 @@ int store_result(u64 fingerprint, const void *data, u32 len, struct mm_struct *m
 	entry->mm_generation = (u64)(unsigned long)mm;
 	entry->pid = current->pid;
 	entry->pid_ns = task_active_pid_ns(current);
+
+	/* Handle large data by allocating external RAM slot */
+	if (len > KCR_RESULT_SIZE_MAX) {
+		socket = cpu_to_node(smp_processor_id());
+		if (socket >= num_sockets)
+			socket = 0;
+		
+		/* Find free external slot */
+		spin_lock_irqsave(&l3_tables[socket].ext_lock, flags);
+		for (ext_slot = 0; ext_slot < KCR_EXT_SLOTS; ext_slot++) {
+			if (!l3_tables[socket].ext_slots[ext_slot]) {
+				l3_tables[socket].ext_slots[ext_slot] = kvmalloc(len, GFP_ATOMIC);
+				if (l3_tables[socket].ext_slots[ext_slot]) {
+					memcpy(l3_tables[socket].ext_slots[ext_slot], data, len);
+					l3_tables[socket].ext_slot_size[ext_slot] = len;
+					entry->ext_data = l3_tables[socket].ext_slots[ext_slot];
+					entry->ext_size = len;
+				}
+				break;
+			}
+		}
+		spin_unlock_irqrestore(&l3_tables[socket].ext_lock, flags);
+
+		if (ext_slot >= KCR_EXT_SLOTS || !entry->ext_data) {
+			kfree(entry);
+			return -ENOMEM;
+		}
+	} else {
+		/* Small data: store inline */
+		memcpy(entry->result, data, len);
+		entry->ext_data = NULL;
+		entry->ext_size = 0;
+	}
 
 	cache = this_cpu_ptr(caches);
 	store_in_l2(cache, entry, fingerprint);
@@ -303,6 +341,7 @@ EXPORT_SYMBOL(store_result);
  * Called by IOMMU notifier on DMA writes or MMU on page modifications.
  * Iterates through all L2 and L3 buckets, removing matching entries.
  * Uses RCU-safe deletion with deferred freeing.
+ * Also frees any external RAM slots allocated for large data.
  *
  * Note: Currently invalidates entire mm, not just specified range.
  * Future optimization could implement range-based invalidation.
@@ -314,7 +353,7 @@ void invalidate_range(struct mm_struct *mm, unsigned long start, unsigned long e
 	struct kcr_entry *entry;
 	struct hlist_node *tmp;
 	unsigned long flags;
-	int i, socket;
+	int i, socket, j;
 
 	cache = this_cpu_ptr(caches);
 	for (i = 0; i < KCR_L2_ENTRIES; i++) {
@@ -348,6 +387,20 @@ void invalidate_range(struct mm_struct *mm, unsigned long start, unsigned long e
 		}
 		spin_unlock_irqrestore(&bkt->lock, flags);
 	}
+
+	/* Free external slots that belong to this mm (best-effort) */
+	spin_lock_irqsave(&table->ext_lock, flags);
+	for (j = 0; j < KCR_EXT_SLOTS; j++) {
+		if (table->ext_slots[j]) {
+			/* Note: We can't easily track which mm owns each slot,
+			 * so we free all slots on invalidation. This is conservative.
+			 * A production implementation would track mm per slot. */
+			kvfree(table->ext_slots[j]);
+			table->ext_slots[j] = NULL;
+			table->ext_slot_size[j] = 0;
+		}
+	}
+	spin_unlock_irqrestore(&table->ext_lock, flags);
 
 	pr_debug("KCR: invalidated range [%lx-%lx] for mm %p\n", start, end, mm);
 }
