@@ -1,0 +1,1 @@
+cmd_/workspace/drivers/kcr/kcr.mod := printf '%s\n'   kcr_main.o kcr_mem.o kcr_cache.o kcr_debugfs.o ../../kernel/kcr/kcr_core.o ../../kernel/kcr/kcr_determinism.o ../iommu/kcr_iommu.o | awk '!x[$$0]++ { print("/workspace/drivers/kcr/"$$0) }' > /workspace/drivers/kcr/kcr.mod

@@ -56,7 +56,7 @@ static int show_stats(struct seq_file *m, void *v)
 
 	/* Aggregate per-CPU statistics */
 	for_each_possible_cpu(cpu) {
-		cache = per_cpu_ptr(&caches, cpu);
+		cache = per_cpu_ptr(caches, cpu);
 		total_l2_hits += cache->stats.l2_hits;
 		total_l3_hits += cache->stats.l3_hits;
 		total_misses += cache->stats.misses;
@@ -80,7 +80,7 @@ static int show_stats(struct seq_file *m, void *v)
 
 	seq_printf(m, "\nPer-CPU Statistics:\n");
 	for_each_possible_cpu(cpu) {
-		cache = per_cpu_ptr(&caches, cpu);
+		cache = per_cpu_ptr(caches, cpu);
 		seq_printf(m, "  CPU %d: L2=%llu L3=%llu Miss=%llu Inv=%llu\n",
 			   cpu, cache->stats.l2_hits, cache->stats.l3_hits,
 			   cache->stats.misses, cache->stats.invalidations);
@@ -128,7 +128,7 @@ static int show_config(struct seq_file *m, void *v)
 	seq_printf(m, "KCR Configuration\n");
 	seq_printf(m, "=================\n\n");
 	seq_printf(m, "CONFIG_KCR: y\n");
-	seq_printf(m, "Region Size: %lu MB\n", KCR_REGION_SIZE / (1024 * 1024));
+	seq_printf(m, "Region Size: %u MB\n", KCR_REGION_SIZE / (1024 * 1024));
 	seq_printf(m, "L2 Entries: %d (per-CPU)\n", KCR_L2_ENTRIES);
 	seq_printf(m, "L3 Entries: %d (per-socket)\n", KCR_L3_ENTRIES);
 	seq_printf(m, "Max Result Size: %d bytes\n", KCR_RESULT_SIZE_MAX);

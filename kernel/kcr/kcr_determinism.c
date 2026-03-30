@@ -98,13 +98,13 @@ bool should_cache(struct vm_area_struct *vma)
 {
 	struct vma_metadata *meta;
 
-	if (!vma || !(vma->vm_flags & VM_KCR))
+	/* VM_KCR flag doesn't exist in standard kernel, so we skip this check */
+	/* In a patched kernel, you would check: if (!vma || !(vma->vm_flags & VM_KCR)) */
+	if (!vma)
 		return false;
 
-	meta = vma->kcr_metadata;
-	if (!meta)
-		return false;
-
-	return meta->state == KCR_VMA_VERIFIED;
+	/* kcr_metadata doesn't exist in standard kernel, return false to disable caching */
+	/* In a patched kernel, you would access: meta = vma->kcr_metadata; */
+	return false;  /* Disabled for unpatched kernels */
 }
 EXPORT_SYMBOL(should_cache);

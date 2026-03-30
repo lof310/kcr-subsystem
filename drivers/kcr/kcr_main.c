@@ -27,12 +27,12 @@ MODULE_LICENSE("GPL");
 MODULE_VERSION("1.0");
 
 /* Module parameter to enable/disable KCR at runtime */
-static bool kcr_enable = true;
+bool kcr_enable = true;
 module_param(kcr_enable, bool, 0644);
 MODULE_PARM_DESC(kcr_enable, "Enable KCR subsystem (default: on)");
 
 /* Global shared memory region - visible to kernel and user space */
-static struct shared_region *kcr_region;
+struct shared_region *kcr_region;
 
 /**
  * caches - Per-CPU L2 cache instances
@@ -47,8 +47,8 @@ DEFINE_PER_CPU_ALIGNED(struct cpu_cache, caches);
 EXPORT_PER_CPU_SYMBOL(caches);
 
 /* Per-socket L3 cache tables - one table per NUMA node/socket */
-static struct l3_table *l3_tables;
-static int num_sockets;
+struct l3_table *l3_tables;
+int num_sockets;
 
 /* Export global symbols for use by other KCR modules */
 EXPORT_SYMBOL(l3_tables);
