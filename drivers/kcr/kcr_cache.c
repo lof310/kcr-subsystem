@@ -29,7 +29,7 @@ extern int num_sockets;
 
 /**
  * free_entry_rcu() - RCU callback for deferred entry freeing
- * @head: RCU head embedded in kcr_entry.node
+ * @head: RCU head embedded in kcr_entry.rcu (NOT node!)
  *
  * Called by RCU subsystem after grace period completes.
  * Safely frees cache entry when all readers have finished.
@@ -38,7 +38,7 @@ static void free_entry_rcu(struct rcu_head *head)
 {
 	struct kcr_entry *entry;
 	
-	entry = container_of(head, struct kcr_entry, node);
+	entry = container_of(head, struct kcr_entry, rcu);
 	kfree(entry);
 }
 
@@ -149,7 +149,7 @@ struct kcr_entry *lookup_unified(u64 fingerprint, struct mm_struct *mm)
 	struct cpu_cache *cache;
 	struct kcr_entry *entry;
 
-	cache = this_cpu_ptr(&caches);
+	cache = this_cpu_ptr(caches);
 	
 	entry = lookup_l2(cache, fingerprint, mm);
 	if (entry)
@@ -193,7 +193,7 @@ static int store_in_l2(struct cpu_cache *cache, struct kcr_entry *entry,
 	hlist_for_each_entry_rcu(old, &bkt->head, node) {
 		if (old->fingerprint == fingerprint && old->mm == entry->mm) {
 			hlist_del_rcu(&old->node);
-			call_rcu(&old->node, free_entry_rcu);
+			call_rcu(&old->rcu, free_entry_rcu);
 			break;
 		}
 	}
@@ -231,7 +231,7 @@ static int store_in_l3(struct kcr_entry *entry, u64 fingerprint)
 	hlist_for_each_entry_rcu(old, &table->buckets[fingerprint % KCR_L3_ENTRIES].head, node) {
 		if (old->fingerprint == fingerprint && old->mm == entry->mm) {
 			hlist_del_rcu(&old->node);
-			call_rcu(&old->node, free_entry_rcu);
+			call_rcu(&old->rcu, free_entry_rcu);
 			break;
 		}
 	}
@@ -280,11 +280,12 @@ int store_result(u64 fingerprint, const void *data, u32 len, struct mm_struct *m
 	entry->flags = KCR_FLAG_VALID;
 	entry->hit_count = 0;
 	entry->mm = mm;
-	entry->mm_generation = mm ? mm->kcr_generation : 0;
+	/* Use mm pointer address as generation substitute since mm->kcr_generation doesn't exist */
+	entry->mm_generation = (u64)(unsigned long)mm;
 	entry->pid = current->pid;
 	entry->pid_ns = task_active_pid_ns(current);
 
-	cache = this_cpu_ptr(&caches);
+	cache = this_cpu_ptr(caches);
 	store_in_l2(cache, entry, fingerprint);
 	store_in_l3(entry, fingerprint);
 
@@ -314,7 +315,7 @@ void invalidate_range(struct mm_struct *mm, unsigned long start, unsigned long e
 	unsigned long flags;
 	int i, socket;
 
-	cache = this_cpu_ptr(&caches);
+	cache = this_cpu_ptr(caches);
 	for (i = 0; i < KCR_L2_ENTRIES; i++) {
 		struct l2_bucket *bkt = &cache->l2[i];
 		
@@ -322,7 +323,7 @@ void invalidate_range(struct mm_struct *mm, unsigned long start, unsigned long e
 		hlist_for_each_entry_safe(entry, tmp, &bkt->head, node) {
 			if (entry->mm == mm) {
 				hlist_del_rcu(&entry->node);
-				call_rcu(&entry->node, free_entry_rcu);
+				call_rcu(&entry->rcu, free_entry_rcu);
 				this_cpu_inc(cache->stats.invalidations);
 			}
 		}
@@ -341,7 +342,7 @@ void invalidate_range(struct mm_struct *mm, unsigned long start, unsigned long e
 		hlist_for_each_entry_safe(entry, tmp, &bkt->head, node) {
 			if (entry->mm == mm) {
 				hlist_del_rcu(&entry->node);
-				call_rcu(&entry->node, free_entry_rcu);
+				call_rcu(&entry->rcu, free_entry_rcu);
 			}
 		}
 		spin_unlock_irqrestore(&bkt->lock, flags);

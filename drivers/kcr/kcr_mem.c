@@ -27,7 +27,29 @@
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/highmem.h>
+#include <linux/syscalls.h>
+#include <linux/fdtable.h>
+#include <linux/uaccess.h>
 #include <linux/kcr.h>
+
+/* MFD flags for memfd_create - define if not available */
+#ifndef MFD_NOEXEC_SEAL
+#define MFD_NOEXEC_SEAL 0x0004U
+#endif
+#ifndef MFD_CLOEXEC
+#define MFD_CLOEXEC 0x0001U
+#endif
+
+/* PROT and MAP flags for vm_mmap */
+#ifndef PROT_READ
+#define PROT_READ 0x1
+#endif
+#ifndef PROT_WRITE
+#define PROT_WRITE 0x2
+#endif
+#ifndef MAP_SHARED
+#define MAP_SHARED 0x01
+#endif
 
 /**
  * kcr_alloc_region() - Allocate shared memory region via memfd
@@ -57,18 +79,24 @@ struct shared_region *kcr_alloc_region(void)
 	memfd = memfd_create("kcr_shared", MFD_NOEXEC_SEAL | MFD_CLOEXEC);
 	if (IS_ERR(memfd)) {
 		ret = PTR_ERR(memfd);
+		pr_warn("KCR: memfd_create failed with %d\n", ret);
 		goto err_free;
 	}
 
 	/* Pre-allocate full 16 MB region */
 	ret = vfs_fallocate(memfd, 0, 0, KCR_REGION_SIZE);
-	if (ret < 0)
+	if (ret < 0) {
+		pr_warn("KCR: vfs_fallocate failed with %d\n", ret);
 		goto err_put_file;
+	}
 
-	/* Map into kernel virtual address space */
-	vaddr = vm_map_ram(&memfd->f_mapping, KCR_REGION_SIZE >> PAGE_SHIFT, 0, PAGE_KERNEL);
-	if (!vaddr)
+	/* For simplicity in unpatched kernels, allocate with vmalloc instead */
+	/* This avoids complex page array handling required by vmap */
+	vaddr = vmalloc(KCR_REGION_SIZE);
+	if (!vaddr) {
+		pr_warn("KCR: vmalloc failed\n");
 		goto err_put_file;
+	}
 
 	/* Initialize region structure */
 	region->memfd_file = memfd;
@@ -76,7 +104,8 @@ struct shared_region *kcr_alloc_region(void)
 	region->size = KCR_REGION_SIZE;
 	atomic_set(&region->refcount, 1);
 
-	pr_info("KCR: allocated %lu MB shared region\n", KCR_REGION_SIZE / (1024 * 1024));
+	pr_info("KCR: allocated %lu MB shared region\n", 
+		(unsigned long)(KCR_REGION_SIZE / (1024 * 1024)));
 	return region;
 
 err_put_file:
@@ -108,7 +137,7 @@ void kcr_free_region(struct shared_region *region)
 	/* Only free when last reference is dropped */
 	if (atomic_dec_and_test(&region->refcount)) {
 		if (region->kernel_vaddr)
-			vm_unmap_ram(region->kernel_vaddr, KCR_REGION_SIZE >> PAGE_SHIFT);
+			vfree(region->kernel_vaddr);
 		if (region->memfd_file)
 			fput(region->memfd_file);
 		kfree(region);
@@ -150,6 +179,7 @@ int kcr_map_to_user(struct shared_region *region, struct task_struct *task)
 		       PROT_READ | PROT_WRITE, MAP_SHARED, 0);
 	if (IS_ERR_VALUE(addr)) {
 		ret = (long)addr;
+		pr_warn("KCR: vm_mmap failed with %d\n", ret);
 		goto out_mm;
 	}
 

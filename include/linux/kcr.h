@@ -110,14 +110,17 @@ struct kcr_metadata {
  * @flags: Entry status flags (KCR_FLAG_*)
  * @hit_count: Number of times this entry was reused
  * @mm: Owner memory space pointer for isolation
- * @mm_generation: Generation counter at insertion time
+ * @mm_generation: Generation counter at insertion time (stored locally)
  * @pid: Owner process ID
  * @pid_ns: PID namespace for container isolation
- * @node: RCU-protected hash list node
+ * @node: RCU-protected hash list node (hlist_node)
+ * @rcu: RCU callback head for deferred freeing (separate from node)
  * 
  * Cache entries support three sizes via union (not shown): small (16B), medium (32B), large (64B).
  * The large variant shown here accommodates complex crypto operations with multiple outputs.
  * Alignment to 64 bytes prevents false sharing between CPU cores.
+ * Note: 'node' is for hlist linkage, 'rcu' is for call_rcu() - they serve different purposes.
+ * Note: mm_generation is stored locally since mm_struct->kcr_generation may not exist.
  */
 struct kcr_entry {
 	u64 fingerprint;
@@ -128,10 +131,11 @@ struct kcr_entry {
 	u8 flags;
 	u32 hit_count;
 	struct mm_struct *mm;
-	u64 mm_generation;
+	u64 mm_generation;  /* Local copy since mm->kcr_generation may not exist */
 	pid_t pid;
 	struct pid_namespace *pid_ns;
 	struct hlist_node node;
+	struct rcu_head rcu;
 } __aligned(64);
 
 /**

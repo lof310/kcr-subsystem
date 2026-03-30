@@ -10,7 +10,7 @@ kcr-objs := kcr_main.o kcr_mem.o kcr_cache.o kcr_debugfs.o \
 
 ccflags-y += -I$(src)/../../include
 
-KERNEL_DIR ?= /lib/modules/$(shell uname -r)/build
+KERNEL_DIR ?= /lib/modules/6.1.0-44-amd64/build
 
 all:
 	make -C $(KERNEL_DIR) M=$(PWD) modules
