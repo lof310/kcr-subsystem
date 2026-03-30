@@ -41,9 +41,14 @@ struct shared_region *kcr_region;
  * inter-core contention. Aligned to cache line boundaries (64 bytes)
  * to prevent false sharing between adjacent CPUs.
  *
+ * NOTE: Using dynamic allocation (alloc_percpu) instead of DEFINE_PER_CPU
+ * because struct cpu_cache is too large (>16KB) for static per-CPU area.
+ * Static per-CPU variables in modules are limited to the reserved chunk
+ * (~16KB), while alloc_percpu can allocate from general kernel memory.
+ *
  * Exported for use by cache operations in kcr_cache.c
  */
-DEFINE_PER_CPU_ALIGNED(struct cpu_cache, caches);
+struct cpu_cache __percpu *caches;
 EXPORT_PER_CPU_SYMBOL(caches);
 
 /* Per-socket L3 cache tables - one table per NUMA node/socket */
@@ -92,11 +97,25 @@ int kcr_init(void)
 		return 0;
 	}
 
+	/* Allocate per-CPU L2 caches dynamically using alloc_percpu.
+	 * This is necessary because struct cpu_cache is too large (>16KB)
+	 * for the static per-CPU area reserved for modules.
+	 * alloc_percpu can allocate from general kernel memory without the 16KB limit.
+	 */
+	caches = alloc_percpu(struct cpu_cache);
+	if (!caches) {
+		pr_err("KCR: Could not allocate %zu bytes percpu data. Consider reducing KCR_L2_ENTRIES or KCR_L3_ENTRIES.\n",
+		       sizeof(struct cpu_cache));
+		ret = -ENOMEM;
+		goto err_disable;
+	}
+
 	/* Allocate shared memory region (memfd-backed, zero-copy) */
 	kcr_region = kcr_alloc_region();
 	if (!kcr_region) {
 		pr_err("KCR: failed to allocate shared region\n");
-		return -ENOMEM;
+		ret = -ENOMEM;
+		goto err_free_caches;
 	}
 
 	/* Determine number of NUMA nodes (sockets) for L3 cache allocation */
@@ -110,7 +129,7 @@ int kcr_init(void)
 	/* Initialize per-CPU L2 caches */
 	for_each_possible_cpu(cpu) {
 		int i;
-		struct cpu_cache *cache = per_cpu_ptr(&caches, cpu);
+		struct cpu_cache *cache = per_cpu_ptr(caches, cpu);
 		
 		for (i = 0; i < KCR_L2_ENTRIES; i++) {
 			INIT_HLIST_HEAD(&cache->l2[i].head);
@@ -141,6 +160,11 @@ int kcr_init(void)
 err_free_region:
 	kcr_free_region(kcr_region);
 	kcr_region = NULL;
+err_free_caches:
+	free_percpu(caches);
+	caches = NULL;
+err_disable:
+	kcr_enable = false;
 	return ret;
 }
 EXPORT_SYMBOL(kcr_init);
@@ -150,15 +174,20 @@ EXPORT_SYMBOL(kcr_init);
  *
  * Performs complete teardown of the KCR subsystem:
  * 1. Removes debugfs interface
- * 2. Frees per-socket L3 cache tables
- * 3. Releases shared memory region (reference counted)
+ * 2. Frees per-CPU L2 caches (dynamically allocated)
+ * 3. Frees per-socket L3 cache tables
+ * 4. Releases shared memory region (reference counted)
  *
  * Called automatically during module unload or kernel shutdown.
- * Per-CPU caches are automatically freed by the per-CPU subsystem.
  */
 void kcr_exit(void)
 {
 	kcr_debugfs_exit();
+	
+	if (caches) {
+		free_percpu(caches);
+		caches = NULL;
+	}
 	
 	if (l3_tables) {
 		kfree(l3_tables);

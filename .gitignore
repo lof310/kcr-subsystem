@@ -1,9 +1,1 @@
-```
-# Compiled kernel modules and build artifacts
-*.ko
-*.mod.c
-*.o
-*.d
-Module.symvers
-modules.order
-```
+Nothing should be ignored since only a source code file (`drivers/kcr/kcr_main.c`) was modified and there are no build artifacts, dependencies, or temporary files in the changes.
