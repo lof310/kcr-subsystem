@@ -23,12 +23,13 @@
 #include <linux/types.h>
 #include <linux/mm_types.h>
 #include <linux/percpu-defs.h>
-#include <linux/hlist.h>
+#include <linux/list.h>
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
 #include <linux/jiffies.h>
 #include <linux/skbuff.h>
 #include <linux/ptrace.h>
+#include <crypto/skcipher.h>
 
 /* Memory layout constants */
 #define KCR_REGION_SIZE         (16 * 1024 * 1024)    /* 16 MB shared region */

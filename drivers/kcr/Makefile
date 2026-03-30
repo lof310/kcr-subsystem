@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # Kernel Computation Reuse (KCR) Module Makefile
 
-ccflags-y := -DKCR_DEBUG
+ccflags-y := -DKCR_DEBUG -DCONFIG_KCR
 
 obj-m += kcr.o
 kcr-objs := kcr_main.o kcr_mem.o kcr_cache.o kcr_debugfs.o \
