@@ -1,13 +1,9 @@
 ```
-# Compiled object files
+# Compiled kernel modules and build artifacts
+*.ko
+*.mod.c
 *.o
-*.obj
-*.cmd
 *.d
-
-# Kernel build artifacts
-.kcr_*.o.cmd
-.kcr_*.o.d
-.kcr_*.cmd
-.kcr_*.d
+Module.symvers
+modules.order
 ```

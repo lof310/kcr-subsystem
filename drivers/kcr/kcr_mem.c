@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
 /**
- * KCR Memory Management - memfd-based shared memory allocation
+ * KCR Memory Management - Simplified vmalloc-based allocation
  *
- * This file implements zero-copy shared memory management for KCR using
- * the memfd subsystem. The shared region is simultaneously visible to
- * both kernel and user space, eliminating 400-600 cycle copy overhead
- * per kernel-user transition.
+ * This file implements shared memory management for KCR using vmalloc.
+ * The shared region is visible to kernel space. User space access
+ * requires additional integration via mmap or other mechanisms.
  *
  * Key features:
- * - Anonymous memory allocation (no backing filesystem)
- * - File descriptor export to user space
- * - mmap() mapping without data copies
- * - Sealing options (MFD_NOEXEC_SEAL) for security
+ * - Simple vmalloc allocation (no memfd dependency)
  * - Reference counting for safe concurrent access
+ * - Compatible with standard kernels without patches
  *
  * Memory layout:
  *   Offset 0:         Metadata (4 KB)
@@ -23,19 +20,11 @@
 
 #include <linux/kernel.h>
 #include <linux/slab.h>
-#include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/highmem.h>
-#include <linux/syscalls.h>
-#include <linux/fdtable.h>
-#include <linux/uaccess.h>
 #include <linux/vmalloc.h>
 #include <linux/kcr.h>
 
-/* Forward declaration for memfd_create - defined in mm/memfd.c but not exported in headers */
-extern long do_memfd_create(const char __user *uname_ptr, unsigned int flags);
-
-/* MFD flags for memfd_create - define if not available */
+/* MFD flags - defined for compatibility but not used in simplified version */
 #ifndef MFD_NOEXEC_SEAL
 #define MFD_NOEXEC_SEAL 0x0004U
 #endif
@@ -55,154 +44,102 @@ extern long do_memfd_create(const char __user *uname_ptr, unsigned int flags);
 #endif
 
 /**
- * kcr_alloc_region() - Allocate shared memory region via memfd
+ * kcr_alloc_region() - Allocate shared memory region via vmalloc
  *
- * Creates an anonymous memory-backed file descriptor using memfd_create(),
- * then maps it into kernel virtual address space. The region is:
- * - Sealed with MFD_NOEXEC_SEAL to prevent code execution
- * - Marked MFD_CLOEXEC to auto-close on exec()
- * - Pre-allocated to 16 MB via vfs_fallocate()
- * - Mapped into kernel space via vm_map_ram()
+ * Creates a kernel virtual memory region using vmalloc().
+ * This simplified implementation doesn't require memfd support
+ * and works on standard kernels.
  *
  * Returns: Pointer to shared_region structure, or NULL on failure
  */
 struct shared_region *kcr_alloc_region(void)
 {
-	struct shared_region *region;
-	struct file *memfd = NULL;
-	void *vaddr;
-	int ret;
+struct shared_region *region;
+void *vaddr;
 
-	/* Allocate region descriptor */
-	region = kzalloc(sizeof(*region), GFP_KERNEL);
-	if (!region)
-		return NULL;
+/* Allocate region descriptor */
+region = kzalloc(sizeof(*region), GFP_KERNEL);
+if (!region)
+return NULL;
 
-	/* Try memfd_create first, fall back to pure vmalloc if unavailable */
-#ifdef CONFIG_MEMFD_CREATE
-	{
-		struct file *tmp_memfd;
-		long ret_fd;
-		
-		ret_fd = do_memfd_create("kcr_shared", MFD_NOEXEC_SEAL | MFD_CLOEXEC);
-		if (ret_fd >= 0) {
-			tmp_memfd = fget(ret_fd);
-			if (tmp_memfd) {
-				memfd = tmp_memfd;
-				put_unused_fd(ret_fd);
-			}
-		} else {
-			pr_warn("KCR: memfd_create failed with %ld, falling back to vmalloc\n", ret_fd);
-		}
-	}
-#endif
+/* Allocate with vmalloc - simple and reliable */
+vaddr = vmalloc(KCR_REGION_SIZE);
+if (!vaddr) {
+pr_warn("KCR: vmalloc failed\n");
+kfree(region);
+return NULL;
+}
 
-	if (memfd) {
-		/* Pre-allocate full 16 MB region */
-		ret = vfs_fallocate(memfd, 0, 0, KCR_REGION_SIZE);
-		if (ret < 0) {
-			pr_warn("KCR: vfs_fallocate failed with %d\n", ret);
-			fput(memfd);
-			memfd = NULL;
-		}
-	}
+/* Initialize region structure */
+region->memfd_file = NULL;  /* No memfd in simplified version */
+region->kernel_vaddr = vaddr;
+region->size = KCR_REGION_SIZE;
+region->phys_addr = 0;  /* vmalloc doesn't provide contiguous physical */
+atomic_set(&region->refcount, 1);
 
-	/* Allocate with vmalloc - works for both memfd and fallback cases */
-	vaddr = vmalloc(KCR_REGION_SIZE);
-	if (!vaddr) {
-		pr_warn("KCR: vmalloc failed\n");
-		if (memfd)
-			fput(memfd);
-		kfree(region);
-		return NULL;
-	}
+/* Zero-initialize the region */
+memset(vaddr, 0, KCR_REGION_SIZE);
 
-	/* Initialize region structure */
-	region->memfd_file = memfd;
-	region->kernel_vaddr = vaddr;
-	region->size = KCR_REGION_SIZE;
-	atomic_set(&region->refcount, 1);
+pr_info("KCR: allocated %lu MB shared region via vmalloc\n",
+(unsigned long)(KCR_REGION_SIZE / (1024 * 1024)));
 
-	pr_info("KCR: allocated %lu MB shared region%s\n", 
-		(unsigned long)(KCR_REGION_SIZE / (1024 * 1024)),
-		memfd ? " (memfd-backed)" : " (vmalloc fallback)");
-	return region;
+return region;
 }
 EXPORT_SYMBOL(kcr_alloc_region);
 
 /**
  * kcr_free_region() - Free shared memory region
  *
- * Releases all resources associated with the shared region:
- * - Unmaps kernel virtual address mapping
- * - Releases memfd file reference
- * - Frees region descriptor
+ * Unmaps kernel virtual address and frees descriptor.
+ * Uses reference counting for safe concurrent access.
  *
- * Uses atomic reference counting to ensure safe deallocation
- * when multiple users may hold references.
- *
- * @region: Region to free (can be NULL)
+ * @region: Region to free
  */
 void kcr_free_region(struct shared_region *region)
 {
-	if (!region)
-		return;
+if (!region)
+return;
 
-	/* Only free when last reference is dropped */
-	if (atomic_dec_and_test(&region->refcount)) {
-		if (region->kernel_vaddr)
-			vfree(region->kernel_vaddr);
-		if (region->memfd_file)
-			fput(region->memfd_file);
-		kfree(region);
-	}
+if (!atomic_dec_and_test(&region->refcount))
+return;
+
+if (region->kernel_vaddr) {
+vfree(region->kernel_vaddr);
+region->kernel_vaddr = NULL;
+}
+
+/* No memfd file to release in simplified version */
+
+kfree(region);
+pr_debug("KCR: freed shared region\n");
 }
 EXPORT_SYMBOL(kcr_free_region);
 
 /**
- * kcr_map_to_user() - Map shared region to user space
+ * kcr_map_to_user() - Map shared region to user space (stub)
  *
- * Maps the memfd-backed region into the target task's address space
- * using vm_mmap(). User space can then access cached results directly
- * without syscalls, achieving zero-copy data sharing.
- *
- * The mapping is:
- * - Read-write accessible (PROT_READ | PROT_WRITE)
- * - Shared across processes (MAP_SHARED)
- * - Located at kernel-chosen address (addr 0 hint)
+ * In the full implementation, this would use remap_pfn_range()
+ * or vm_insert_page() to map the region into user space.
+ * This simplified version returns -ENOSYS as user mapping
+ * requires additional kernel support.
  *
  * @region: Shared region to map
  * @task: Target task for mapping
- * Returns: 0 on success, negative errno on failure
+ * Returns: -ENOSYS (not implemented in simplified version)
  */
 int kcr_map_to_user(struct shared_region *region, struct task_struct *task)
 {
-	struct mm_struct *mm;
-	unsigned long addr;
-	int ret;
+if (!region || !task)
+return -EINVAL;
 
-	if (!region || !task)
-		return -EINVAL;
-
-	mm = get_task_mm(task);
-	if (!mm)
-		return -ESRCH;
-
-	/* Map memfd into user address space */
-	addr = vm_mmap(region->memfd_file, 0, region->size,
-		       PROT_READ | PROT_WRITE, MAP_SHARED, 0);
-	if (IS_ERR_VALUE(addr)) {
-		ret = (long)addr;
-		pr_warn("KCR: vm_mmap failed with %d\n", ret);
-		goto out_mm;
-	}
-
-	pr_debug("KCR: mapped region to user space at 0x%lx for PID %d\n",
-		 addr, task_pid_nr(task));
-	ret = 0;
-
-out_mm:
-	mmput(mm);
-	return ret;
+/* 
+ * Simplified version doesn't support user mapping.
+ * Full implementation would use:
+ * - remap_pfn_range() for physical mappings
+ * - vm_insert_page() for vmalloc regions
+ * - Or memfd_get_fd() + sys_mmap() for memfd-backed regions
+ */
+pr_debug("KCR: user mapping not available in simplified mode\n");
+return -ENOSYS;
 }
 EXPORT_SYMBOL(kcr_map_to_user);
