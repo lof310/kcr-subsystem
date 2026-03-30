@@ -1,1 +1,21 @@
-Nothing should be ignored since only a source code file (`drivers/kcr/kcr_main.c`) was modified and there are no build artifacts, dependencies, or temporary files in the changes.
+drivers/kcr/*.o
+drivers/kcr/*.obj
+drivers/kcr/*.a
+drivers/kcr/*.so
+drivers/kcr/*.dylib
+drivers/kcr/*.dll
+include/linux/*.o
+include/linux/*.obj
+include/linux/*.a
+include/linux/*.so
+include/linux/*.dylib
+include/linux/*.dll
+*.ko
+*.mod.c
+*.mod.o
+*.order
+*.symvers
+*.markers
+.tmp_versions/
+*.c~*
+*.h~*

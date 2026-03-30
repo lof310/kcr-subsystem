@@ -41,10 +41,14 @@
 #define KCR_L3_SIZE             (4096 * 64)             /* 4096 entries × 64 bytes */
 
 /* Cache configuration */
-#define KCR_L2_ENTRIES          512                     /* Per-CPU L2 size */
-#define KCR_L3_ENTRIES          4096                    /* Per-socket L3 size */
-#define KCR_RESULT_SIZE_MAX     64                      /* Max result bytes */
+#define KCR_L2_ENTRIES          64                      /* Per-CPU L2 size (reduced from 512 to fit in 16KB percpu limit) */
+#define KCR_L3_ENTRIES          512                     /* Per-socket L3 size (reduced from 4096) */
+#define KCR_RESULT_SIZE_MAX     64                      /* Max result bytes stored inline in cache entry */
 #define KCR_FINGERPRINT_BITS    64                      /* xxHash64 output */
+
+/* External storage configuration - for caching larger data in RAM */
+#define KCR_EXT_SLOTS           256                     /* Number of external data slots per socket */
+#define KCR_EXT_SLOT_SIZE       (4 * 1024)              /* 4 KB per external slot */
 
 /* Hash seeds for fingerprint computation */
 #define KCR_SEED_BASE           0x123456789ABCDEF0ULL   /* General purpose */
@@ -103,7 +107,9 @@ struct kcr_metadata {
 /**
  * struct kcr_entry - Cache entry structure (64 bytes)
  * @fingerprint: 64-bit xxHash64 of input data
- * @result: Cached result data (up to 8 × u64 = 64 bytes)
+ * @result: Cached result data (up to 8 × u64 = 64 bytes inline)
+ * @ext_data: Pointer to external data for results > 64 bytes (RAM-backed)
+ * @ext_size: Size of external data in bytes
  * @expiry_jiffies: Expiration time in jiffies (TTL-based invalidation)
  * @fragment_length: Code fragment length for IP advancement
  * @register_mask: Bitmask indicating which registers contain results
@@ -116,15 +122,24 @@ struct kcr_metadata {
  * @node: RCU-protected hash list node (hlist_node)
  * @rcu: RCU callback head for deferred freeing (separate from node)
  * 
- * Cache entries support three sizes via union (not shown): small (16B), medium (32B), large (64B).
- * The large variant shown here accommodates complex crypto operations with multiple outputs.
+ * Cache entries support two storage modes:
+ * - Inline: Small results (≤64 bytes) stored directly in result[] array
+ * - External: Large results (>64 bytes) stored in system RAM via ext_data pointer
+ * 
  * Alignment to 64 bytes prevents false sharing between CPU cores.
  * Note: 'node' is for hlist linkage, 'rcu' is for call_rcu() - they serve different purposes.
  * Note: mm_generation is stored locally since mm_struct->kcr_generation may not exist.
  */
 struct kcr_entry {
 	u64 fingerprint;
-	u64 result[8];
+	union {
+		u64 result[8];          /* Inline storage for small results (≤64 bytes) */
+		struct {
+			void *ext_data;     /* External RAM pointer for large results */
+			u32 ext_size;       /* Size of external data */
+			u8 reserved[20];    /* Padding to match result[] size */
+		};
+	};
 	u64 expiry_jiffies;
 	u16 fragment_length;
 	u8 register_mask;
@@ -176,14 +191,20 @@ struct cpu_cache {
 
 /**
  * struct l3_table - Per-socket L3 cache table
- * @buckets: Array of L3 buckets (4096 entries)
+ * @buckets: Array of L3 buckets (512 entries)
+ * @ext_slots: External data storage slots for large results (RAM-backed)
+ * @ext_lock: Spinlock protecting external slot allocation
  * @socket_id: Physical socket identifier
  * 
  * Shared among all CPUs on the same NUMA node/socket.
  * Provides larger capacity at slightly higher latency (50-100 cycles).
+ * External slots allow caching data larger than 64 bytes in system RAM.
  */
 struct l3_table {
 	struct l2_bucket buckets[KCR_L3_ENTRIES];
+	void *ext_slots[KCR_EXT_SLOTS];      /* Pointers to externally allocated data */
+	u32 ext_slot_size[KCR_EXT_SLOTS];    /* Size of each external slot */
+	spinlock_t ext_lock;                 /* Protects external slot allocation */
 	u32 socket_id;
 } __aligned(64);
 
