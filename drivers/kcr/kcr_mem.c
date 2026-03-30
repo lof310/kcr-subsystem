@@ -23,14 +23,17 @@
 
 #include <linux/kernel.h>
 #include <linux/slab.h>
-#include <linux/memfd.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/highmem.h>
 #include <linux/syscalls.h>
 #include <linux/fdtable.h>
 #include <linux/uaccess.h>
+#include <linux/vmalloc.h>
 #include <linux/kcr.h>
+
+/* Forward declaration for memfd_create - defined in mm/memfd.c but not exported in headers */
+extern long do_memfd_create(const char __user *uname_ptr, unsigned int flags);
 
 /* MFD flags for memfd_create - define if not available */
 #ifndef MFD_NOEXEC_SEAL
@@ -66,7 +69,7 @@
 struct shared_region *kcr_alloc_region(void)
 {
 	struct shared_region *region;
-	struct file *memfd;
+	struct file *memfd = NULL;
 	void *vaddr;
 	int ret;
 
@@ -75,27 +78,43 @@ struct shared_region *kcr_alloc_region(void)
 	if (!region)
 		return NULL;
 
-	/* Create anonymous memfd with security seals */
-	memfd = memfd_create("kcr_shared", MFD_NOEXEC_SEAL | MFD_CLOEXEC);
-	if (IS_ERR(memfd)) {
-		ret = PTR_ERR(memfd);
-		pr_warn("KCR: memfd_create failed with %d\n", ret);
-		goto err_free;
+	/* Try memfd_create first, fall back to pure vmalloc if unavailable */
+#ifdef CONFIG_MEMFD_CREATE
+	{
+		struct file *tmp_memfd;
+		long ret_fd;
+		
+		ret_fd = do_memfd_create("kcr_shared", MFD_NOEXEC_SEAL | MFD_CLOEXEC);
+		if (ret_fd >= 0) {
+			tmp_memfd = fget(ret_fd);
+			if (tmp_memfd) {
+				memfd = tmp_memfd;
+				put_unused_fd(ret_fd);
+			}
+		} else {
+			pr_warn("KCR: memfd_create failed with %ld, falling back to vmalloc\n", ret_fd);
+		}
+	}
+#endif
+
+	if (memfd) {
+		/* Pre-allocate full 16 MB region */
+		ret = vfs_fallocate(memfd, 0, 0, KCR_REGION_SIZE);
+		if (ret < 0) {
+			pr_warn("KCR: vfs_fallocate failed with %d\n", ret);
+			fput(memfd);
+			memfd = NULL;
+		}
 	}
 
-	/* Pre-allocate full 16 MB region */
-	ret = vfs_fallocate(memfd, 0, 0, KCR_REGION_SIZE);
-	if (ret < 0) {
-		pr_warn("KCR: vfs_fallocate failed with %d\n", ret);
-		goto err_put_file;
-	}
-
-	/* For simplicity in unpatched kernels, allocate with vmalloc instead */
-	/* This avoids complex page array handling required by vmap */
+	/* Allocate with vmalloc - works for both memfd and fallback cases */
 	vaddr = vmalloc(KCR_REGION_SIZE);
 	if (!vaddr) {
 		pr_warn("KCR: vmalloc failed\n");
-		goto err_put_file;
+		if (memfd)
+			fput(memfd);
+		kfree(region);
+		return NULL;
 	}
 
 	/* Initialize region structure */
@@ -104,15 +123,10 @@ struct shared_region *kcr_alloc_region(void)
 	region->size = KCR_REGION_SIZE;
 	atomic_set(&region->refcount, 1);
 
-	pr_info("KCR: allocated %lu MB shared region\n", 
-		(unsigned long)(KCR_REGION_SIZE / (1024 * 1024)));
+	pr_info("KCR: allocated %lu MB shared region%s\n", 
+		(unsigned long)(KCR_REGION_SIZE / (1024 * 1024)),
+		memfd ? " (memfd-backed)" : " (vmalloc fallback)");
 	return region;
-
-err_put_file:
-	fput(memfd);
-err_free:
-	kfree(region);
-	return NULL;
 }
 EXPORT_SYMBOL(kcr_alloc_region);
 

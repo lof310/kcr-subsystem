@@ -45,7 +45,6 @@ EXPORT_SYMBOL(compute_fingerprint);
  *
  * Creates composite fingerprint including:
  * - Algorithm type (AES, ChaCha20, etc.)
- * - Key material (prevents cross-key collisions)
  * - Key length
  * - Ciphertext length
  * - First 64 bytes of plaintext (sample hash)
@@ -74,9 +73,7 @@ u64 crypto_compute_fingerprint(struct skcipher_request *req)
 	tfm = crypto_skcipher_reqtfm(req);
 	
 	input.algo = crypto_skcipher_alg(tfm);
-	/* Skip key material access - not safe without proper kernel support */
-	input.key = NULL;
-	input.keylen = crypto_skcipher_get_keysize(tfm);
+	input.keylen = crypto_skcipher_max_keysize(tfm);
 	input.cryptlen = req->cryptlen;
 	
 	/* Hash first 64 bytes of plaintext as sample */
