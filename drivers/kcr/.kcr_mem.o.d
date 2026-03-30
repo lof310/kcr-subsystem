@@ -322,35 +322,29 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/percpu-refcount.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/kasan.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/kasan-enabled.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/fs.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/wait_bit.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/kdev_t.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/kdev_t.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/dcache.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/rculist.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/rculist_bl.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/list_bl.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/mm.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/mmap_lock.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/bit_spinlock.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/lockref.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/stringhash.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/hash.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/path.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/stat.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/uapi/asm/stat.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/stat.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/uidgid.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/highuid.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/list_lru.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/shrinker.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/xarray.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/kconfig.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/sched/mm.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/resource.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/resource.h \
+ arch/x86/include/generated/uapi/asm/resource.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/resource.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/asm-generic/resource.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/page_ext.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/stacktrace.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/stackdepot.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/page_ref.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/sizes.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/sched.h \
  /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/sched.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/pid.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/rculist.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/sem.h \
  /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/sem.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/ipc.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/uidgid.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/highuid.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/rhashtable-types.h \
  /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/ipc.h \
  arch/x86/include/generated/uapi/asm/ipcbuf.h \
@@ -378,11 +372,6 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/ia32_unistd.h \
  /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/seccomp.h \
  /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/unistd.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/resource.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/resource.h \
- arch/x86/include/generated/uapi/asm/resource.h \
- /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/resource.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/asm-generic/resource.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/latencytop.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/sched/prio.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/sched/types.h \
@@ -402,6 +391,40 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/rv.h \
  arch/x86/include/generated/asm/kmap_size.h \
  /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/kmap_size.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/pgtable.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pgtable.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pkru.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/fpu/api.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/coco.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/pgtable_uffd.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/page_table_check.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pgtable_64.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/fixmap.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/uapi/asm/vsyscall.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/fixmap.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pgtable-invert.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/memremap.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/ioport.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/huge_mm.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/sched/coredump.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/fs.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/wait_bit.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/kdev_t.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/kdev_t.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/dcache.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/rculist_bl.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/list_bl.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/lockref.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/stringhash.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/hash.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/path.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/stat.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/uapi/asm/stat.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/stat.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/list_lru.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/xarray.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/kconfig.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/sched/mm.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/sync_core.h \
  /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/sync_core.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/ioasid.h \
@@ -457,31 +480,14 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/projid.h \
  /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/quota.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/nfs_fs_i.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/mm.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/mmap_lock.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/page_ext.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/stacktrace.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/stackdepot.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/page_ref.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/sizes.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/pgtable.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pgtable.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pkru.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/fpu/api.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/coco.h \
- /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/pgtable_uffd.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/page_table_check.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pgtable_64.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/fixmap.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/uapi/asm/vsyscall.h \
- /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/fixmap.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pgtable-invert.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/memremap.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/ioport.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/huge_mm.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/sched/coredump.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/vmstat.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/vm_event_item.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/vmalloc.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/vmalloc.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pgtable_areas.h \
+ /workspace/drivers/kcr/../../include/linux/kcr.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/skbuff.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/bvec.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/highmem.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/cacheflush.h \
  /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/cacheflush.h \
@@ -494,13 +500,23 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/vtime.h \
  /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/hardirq.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/highmem-internal.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/syscalls.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/aio_abi.h \
- /usr/src/linux-headers-6.1.0-44-common/include/trace/syscall.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/tracepoint.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/static_call.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/cpu.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/node.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/socket.h \
+ arch/x86/include/generated/uapi/asm/socket.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/asm-generic/socket.h \
+ arch/x86/include/generated/uapi/asm/sockios.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/asm-generic/sockios.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/sockios.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/uio.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/uio.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/socket.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/net.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/sockptr.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/net.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/textsearch.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/net/checksum.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/checksum.h \
+ /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/checksum_64.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/dma-mapping.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/device.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/dev_printk.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/energy_model.h \
@@ -541,109 +557,6 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/orc_types.h \
  /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/device.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/pm_wakeup.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/cpuhotplug.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/static_call.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/text-patching.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/trace_events.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/ring_buffer.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/seq_file.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/string_helpers.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/ctype.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/poll.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/poll.h \
- arch/x86/include/generated/uapi/asm/poll.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/asm-generic/poll.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/eventpoll.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/trace_seq.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/seq_buf.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/perf_event.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/perf_event.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/bpf_perf_event.h \
- arch/x86/include/generated/uapi/asm/bpf_perf_event.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/asm-generic/bpf_perf_event.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/ptrace.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/pid_namespace.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/nsproxy.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/ns_common.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/ptrace.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/perf_event.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/stacktrace.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/cpu_entry_area.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/intel_ds.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/pgtable_areas.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/switch_to.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/sched/task_stack.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/magic.h \
- arch/x86/include/generated/asm/local64.h \
- /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/local64.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/local.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/hw_breakpoint.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/uapi/asm/hw_breakpoint.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/kdebug.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/kdebug.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/ftrace.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/trace_recursion.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/interrupt.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/irqreturn.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/irq.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/irq_vectors.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/sections.h \
- /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/sections.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/trace_clock.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/trace_clock.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/kallsyms.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/ftrace.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/compat.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/socket.h \
- arch/x86/include/generated/uapi/asm/socket.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/asm-generic/socket.h \
- arch/x86/include/generated/uapi/asm/sockios.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/asm-generic/sockios.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/sockios.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/uio.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/uio.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/socket.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/if.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/libc-compat.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/hdlc/ioctl.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/compat.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/user32.h \
- /usr/src/linux-headers-6.1.0-44-common/include/asm-generic/compat.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/syscall_wrapper.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/irq_work.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/irq_work.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/jump_label_ratelimit.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/perf_regs.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/uapi/asm/perf_regs.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/cgroup.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/cgroupstats.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/taskstats.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/user_namespace.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/kernel_stat.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/cgroup-defs.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/u64_stats_sync.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/bpf-cgroup-defs.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/psi_types.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/kthread.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/cgroup_subsys.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/security.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/kernel_read_file.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/file.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/fdtable.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/nospec.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/vmalloc.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/vmalloc.h \
- /workspace/drivers/kcr/../../include/linux/kcr.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/skbuff.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/bvec.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/net.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/sockptr.h \
- /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/net.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/textsearch.h \
- /usr/src/linux-headers-6.1.0-44-common/include/net/checksum.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/checksum.h \
- /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/checksum_64.h \
- /usr/src/linux-headers-6.1.0-44-common/include/linux/dma-mapping.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/scatterlist.h \
  /usr/src/linux-headers-6.1.0-44-common/arch/x86/include/asm/io.h \
  arch/x86/include/generated/asm/early_ioremap.h \
@@ -659,6 +572,7 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/net/flow_dissector.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/in6.h \
  /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/in6.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/libc-compat.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/siphash.h \
  /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/if_ether.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/splice.h \
@@ -671,5 +585,10 @@ kcr_mem.o: /workspace/drivers/kcr/kcr_mem.c \
  /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/netfilter/nf_conntrack_common.h \
  /usr/src/linux-headers-6.1.0-44-common/include/net/net_debug.h \
  /usr/src/linux-headers-6.1.0-44-common/include/net/dropreason.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/ptrace.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/pid_namespace.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/nsproxy.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/linux/ns_common.h \
+ /usr/src/linux-headers-6.1.0-44-common/include/uapi/linux/ptrace.h \
  /usr/src/linux-headers-6.1.0-44-common/include/crypto/skcipher.h \
  /usr/src/linux-headers-6.1.0-44-common/include/linux/crypto.h
